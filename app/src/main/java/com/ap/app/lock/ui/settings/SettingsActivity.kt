@@ -216,12 +216,17 @@ fun SettingsScreen(
                 }
             }
 
-            // ── About ────────────────────────────────────────────────────────
+            // ── About ─────────────────────────────────────────────
             SettingsCard(title = "About") {
-                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+
                     Text("App Lock by AP", fontWeight = FontWeight.Bold)
 
-                    // Email — opens mail chooser
+                    // EMAIL
                     TextButton(
                         onClick = {
                             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
@@ -236,23 +241,19 @@ fun SettingsScreen(
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_email), // your drawable email icon
-                                contentDescription = "Email Icon",
+                                painter = painterResource(id = R.drawable.ic_email),
+                                contentDescription = "Email",
                                 modifier = Modifier.size(16.dp)
                             )
 
                             Spacer(modifier = Modifier.width(6.dp))
 
-                            Text(
-                                text = "ap0803apap@gmail.com",
-                                fontSize = 12.sp
-                            )
+                            Text("ap0803apap@gmail.com", fontSize = 12.sp)
                         }
                     }
 
-                    // GitHub — opens browser
+                    // GITHUB
                     TextButton(
                         onClick = {
                             val browserIntent = Intent(
@@ -263,37 +264,37 @@ fun SettingsScreen(
                         }
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_github), // your drawable icon
-                                contentDescription = "GitHub Icon",
+                                painter = painterResource(id = R.drawable.ic_github),
+                                contentDescription = "GitHub",
                                 modifier = Modifier.size(16.dp)
                             )
 
                             Spacer(modifier = Modifier.width(6.dp))
 
-                            Text(
-                                text = "GitHub Repository (Source code)",
-                                fontSize = 12.sp
-                            )
+                            Text("GitHub Repository (Source code)", fontSize = 12.sp)
                         }
+                    }
 
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    // COPYRIGHT (not clickable)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_law),
+                            contentDescription = "Copyright",
+                            modifier = Modifier.size(13.dp),
+                            tint = MaterialTheme.colorScheme.outline
+                        )
 
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_law), // your drawable icon
-                                contentDescription = "law icon",
-                                modifier = Modifier.size(16.dp)
-                            )
+                        Spacer(modifier = Modifier.width(6.dp))
 
-                            Spacer(modifier = Modifier.width(6.dp))
-
-                            Text(
-                                text = " © 2026 APP Lock by AP. All rights reserved",
-                                fontSize = 12.sp
-                            )
-                        }
-
+                        Text(
+                            "© 2026 App Lock by AP. All rights reserved",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.outline
+                        )
                     }
                 }
             }
