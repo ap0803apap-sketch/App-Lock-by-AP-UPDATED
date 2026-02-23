@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 Expressive Colors -->
+    <!-- Primary Colors -->
+    <color name="primary">#6750A4</color>
+    <color name="primary_variant">#5646A3</color>
+    <color name="primary_container">#EADDFF</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#21005E</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#625B71</color>
+    <color name="secondary_container">#E8DEF8</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_secondary_container">#1D192B</color>
+
+    <!-- Tertiary Colors -->
+    <color name="tertiary">#7D5260</color>
+    <color name="tertiary_container">#FFD8E4</color>
+    <color name="on_tertiary">#FFFFFF</color>
+    <color name="on_tertiary_container">#31111D</color>
+
+    <!-- Dark Mode (AMOLED Black) -->
+    <color name="dark_primary">#D0BCFF</color>
+    <color name="dark_on_primary">#371E55</color>
+    <color name="dark_primary_container">#4F378A</color>
+    <color name="dark_on_primary_container">#EADDFF</color>
+
+    <color name="dark_secondary">#CCC7DB</color>
+    <color name="dark_secondary_container">#4A4458</color>
+    <color name="dark_on_secondary">#332D41</color>
+    <color name="dark_on_secondary_container">#E8DEF8</color>
+
+    <color name="dark_tertiary">#FFB3C1</color>
+    <color name="dark_tertiary_container">#633B48</color>
+    <color name="dark_on_tertiary">#492532</color>
+    <color name="dark_on_tertiary_container">#FFD8E4</color>
+
+    <!-- Neutral Colors -->
+    <color name="background">#FFFBFE</color>
+    <color name="surface">#FFFBFE</color>
+    <color name="surface_variant">#F3EEF3</color>
+    <color name="on_background">#1C1B1F</color>
+    <color name="on_surface">#1C1B1F</color>
+    <color name="on_surface_variant">#49454F</color>
+
+    <!-- Dark Neutrals -->
+    <color name="dark_background">#000000</color>
+    <color name="dark_surface">#0F0F0F</color>
+    <color name="dark_surface_variant">#1A1A1A</color>
+    <color name="dark_on_background">#E6E1E5</color>
+    <color name="dark_on_surface">#E6E1E5</color>
+    <color name="dark_on_surface_variant">#A7A0A9</color>
+
+    <!-- Status Colors -->
+    <color name="error">#B3261E</color>
+    <color name="dark_error">#F2B8B5</color>
+    <color name="info_container">#E1F5FE</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+</resources>

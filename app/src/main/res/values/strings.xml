@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">App Lock</string>
+    <string name="admin_receiver_description">Device admin permission for app lock protection</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Welcome to App Lock</string>
+    <string name="onboarding_welcome_desc">Secure your personal apps with biometric, PIN, or password protection</string>
+    <string name="onboarding_detection_title">Select Detection Method</string>
+    <string name="onboarding_permissions_title">Grant Permissions</string>
+    <string name="onboarding_auth_setup_title">Secure App Lock</string>
+    <string name="onboarding_lock_type_title">Choose Lock Type</string>
+    <string name="onboarding_complete_title">Setup Complete</string>
+
+    <!-- Permissions -->
+    <string name="permission_notification">Notifications</string>
+    <string name="permission_overlay">Draw Over Apps</string>
+    <string name="permission_usage_stats">Usage Stats</string>
+    <string name="permission_accessibility">Accessibility Service</string>
+    <string name="permission_admin">Device Admin</string>
+    <string name="permission_battery">Battery Optimization</string>
+
+    <!-- Main Screen -->
+    <string name="main_title">App Lock</string>
+    <string name="main_no_apps">No apps added yet</string>
+    <string name="system_apps">System Apps</string>
+    <string name="search_hint">Search apps...</string>
+
+    <!-- Settings -->
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_security">Security</string>
+    <string name="settings_about">About</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+</resources>

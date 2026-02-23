@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text Styles -->
+    <style name="TextAppearance.AppLock" parent="TextAppearance.AppCompat" />
+
+    <style name="TextAppearance.AppLock.HeadlineLarge">
+        <item name="android:textSize">32sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/on_background</item>
+    </style>
+
+    <style name="TextAppearance.AppLock.TitleLarge">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/on_background</item>
+    </style>
+
+    <style name="TextAppearance.AppLock.BodyLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/on_background</item>
+    </style>
+
+    <style name="TextAppearance.AppLock.BodyMedium">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/on_background</item>
+    </style>
+
+    <!-- Button Styles -->
+    <style name="Button.AppLock" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/primary</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <!-- Card Styles -->
+    <style name="CardView.AppLock" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="contentPadding">12dp</item>
+    </style>
+</resources>

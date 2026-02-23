@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    VALID device-admin XML. Only <uses-policies> is allowed as a child of <device-admin>.
+    The android:description attribute does NOT belong here — it goes in AndroidManifest.xml
+    on the <receiver> tag, which is already there. Having it here caused XML validation
+    to fail silently, preventing the Device Admin dialog from ever appearing.
+
+    Only <force-lock> is declared — the minimum needed for an app lock.
+    Declaring wipe-data, reset-password etc. causes Samsung/OEM to block the dialog.
+-->
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <force-lock />
+    </uses-policies>
+</device-admin>
