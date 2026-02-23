@@ -1,3 +1,4 @@
+
 # 🔐 App Lock by AP
 
 App Lock by AP is a modern Android application built with **Jetpack Compose** that allows users to protect selected apps using **Biometric authentication, PIN, or Password**.  
@@ -122,4 +123,23 @@ Boot receiver automatically restarts protection.
 This project is for educational purposes.
 Always respect user privacy and platform policies when distributing app-lock software.
 
-Clean architecture style:
+<img width="1080" height="2266" alt="00001" src="https://github.com/user-attachments/assets/c5f6c1c1-6782-41b1-b11f-e4bf8c4631ae" />        
+
+
+<img width="1080" height="2235" alt="00002" src="https://github.com/user-attachments/assets/964f7484-9130-4ffb-904c-9293006895c1" />
+
+
+
+<img width="1080" height="2257" alt="00003" src="https://github.com/user-attachments/assets/ce382431-2e3f-4b24-964e-fa78f0454c85" />
+
+
+<img width="1080" height="2252" alt="00004" src="https://github.com/user-attachments/assets/f5757dcc-6f8b-482b-b364-9fef0a6b7c0e" />
+
+
+<img width="1080" height="2233" alt="00005" src="https://github.com/user-attachments/assets/c61e97f1-229f-448a-8f97-37aac362fb32" />
+
+
+<img width="1080" height="3986" alt="00006" src="https://github.com/user-attachments/assets/dc9908a4-6af7-4464-8d14-404c54c93b7a" />
+
+
+
