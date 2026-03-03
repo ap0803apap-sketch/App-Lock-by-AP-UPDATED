@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">App Lock</string>
+    <string name="app_name">App Lock by AP</string>
     <string name="admin_receiver_description">Device admin permission for app lock protection</string>
 
     <!-- Onboarding -->

@@ -9,7 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.lifecycle.ViewModelProvider
-import com.ap.app.lock.receivers.AppLockDeviceAdminReceiver
+import com.ap.app.lock.receivers.DeviceAdminReceiver
 import com.ap.app.lock.ui.MainActivity
 import com.ap.app.lock.ui.onboarding.screens.PermissionsScreen
 import com.ap.app.lock.ui.theme.AppLockTheme
@@ -49,7 +49,7 @@ class PermissionsActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     private fun launchDeviceAdminRequest() {
-        val componentName = ComponentName(this, AppLockDeviceAdminReceiver::class.java)
+        val componentName = ComponentName(this, DeviceAdminReceiver::class.java)
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
         intent.putExtra(

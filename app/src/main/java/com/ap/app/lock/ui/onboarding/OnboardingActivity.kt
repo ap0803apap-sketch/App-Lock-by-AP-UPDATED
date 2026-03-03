@@ -22,7 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import com.ap.app.lock.receivers.AppLockDeviceAdminReceiver
+import com.ap.app.lock.receivers.DeviceAdminReceiver
 import com.ap.app.lock.ui.MainActivity
 import com.ap.app.lock.ui.onboarding.screens.AppLockAuthSetupScreen
 import com.ap.app.lock.ui.onboarding.screens.AppLockTypeScreen
@@ -72,7 +72,7 @@ class OnboardingActivity : AppCompatActivity() {
 
     @Suppress("DEPRECATION")
     private fun launchDeviceAdminRequest() {
-        val componentName = ComponentName(this, AppLockDeviceAdminReceiver::class.java)
+        val componentName = ComponentName(this, DeviceAdminReceiver::class.java)
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
         intent.putExtra(
@@ -85,7 +85,6 @@ class OnboardingActivity : AppCompatActivity() {
     @Suppress("DEPRECATION")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // PermissionsScreen polls isDeviceAdminEnabled every 500ms — UI updates automatically
     }
 
     private fun navigateToMain() {

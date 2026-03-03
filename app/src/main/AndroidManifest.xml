@@ -25,6 +25,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:excludeFromRecents="true"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppLock"
         android:debuggable="false"
@@ -35,6 +36,7 @@
         <activity
             android:name=".ui.splash.SplashActivity"
             android:exported="true"
+            android:excludeFromRecents="true"
             android:theme="@style/Theme.AppLock">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,28 +48,21 @@
         <activity
             android:name=".ui.MainActivity"
             android:exported="false"
+            android:excludeFromRecents="true"
             android:theme="@style/Theme.AppLock" />
 
-        <!--
-            singleTask is CRITICAL here.
-            Root cause of Device Admin never working:
-            SplashActivity was not destroyed after launching OnboardingActivity.
-            When Device Admin dialog opened, OnboardingActivity paused briefly.
-            SplashActivity resumed, re-ran checkState(), saw onboarding incomplete,
-            and launched a BRAND NEW OnboardingActivity on top — burying the
-            Device Admin dialog before the user could interact with it.
-            singleTask + FLAG_ACTIVITY_CLEAR_TASK in SplashActivity together fix this.
-        -->
         <activity
             android:name=".ui.onboarding.OnboardingActivity"
             android:exported="false"
+            android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppLock" />
 
-        <!-- Standalone Permissions screen for returning users missing a permission -->
+        <!-- Standalone Permissions screen -->
         <activity
             android:name=".ui.onboarding.PermissionsActivity"
             android:exported="false"
+            android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppLock" />
 
@@ -75,17 +70,19 @@
         <activity
             android:name=".ui.unlock.UnlockActivity"
             android:exported="false"
+            android:excludeFromRecents="true"
             android:theme="@style/Theme.AppLock.Transparent"
             android:launchMode="singleTask" />
 
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:exported="false"
+            android:excludeFromRecents="true"
             android:theme="@style/Theme.AppLock" />
 
-        <!-- Device Admin Receiver -->
+        <!-- Device Admin Receiver - Class name MUST match what the system expects (Samsung fix) -->
         <receiver
-            android:name=".receivers.AppLockDeviceAdminReceiver"
+            android:name=".receivers.DeviceAdminReceiver"
             android:description="@string/admin_receiver_description"
             android:exported="true"
             android:permission="android.permission.BIND_DEVICE_ADMIN">
@@ -127,7 +124,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Base on user's choice, this app will act as an app locker and will monitor other apps for that this service is required" />
+                android:value="App monitoring service for locker functionality" />
         </service>
 
     </application>

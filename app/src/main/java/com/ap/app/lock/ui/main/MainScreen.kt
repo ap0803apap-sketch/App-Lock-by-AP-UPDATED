@@ -56,7 +56,8 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_settings),
-                                contentDescription = "Settings"
+                                contentDescription = "Settings",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     },
@@ -94,7 +95,7 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(12.dp)) // Increased gap
 
                     // Search Button
                     IconButton(
@@ -105,9 +106,12 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_search),
-                            contentDescription = "Search"
+                            contentDescription = "Search",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(12.dp)) // Increased gap
 
                     // Sort Button
                     Box {
@@ -119,7 +123,8 @@ fun MainScreen(viewModel: MainViewModel = viewModel()) {
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_swap),
-                                contentDescription = "Sort"
+                                contentDescription = "Sort",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
 

@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -15,20 +16,24 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.lifecycleScope
+import com.ap.app.lock.R
 import com.ap.app.lock.ui.MainActivity
 import com.ap.app.lock.ui.onboarding.OnboardingActivity
 import com.ap.app.lock.ui.theme.AppLockTheme
@@ -45,18 +50,21 @@ class UnlockActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-            window.setStatusBarColor(android.graphics.Color.TRANSPARENT)
-        }
+        // Security: Prevent screenshots and screen recording
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
+        // Set transparent status bar for immersive experience
+        @Suppress("DEPRECATION")
+        window.statusBarColor = android.graphics.Color.TRANSPARENT
+
+        // Extract intent data
         val packageName = intent.getStringExtra("package_name") ?: ""
         val appName = intent.getStringExtra("app_name") ?: ""
         val fromSplash = intent.getBooleanExtra("fromSplash", false)
         val allPermissionsGranted = intent.getBooleanExtra("allPermissionsGranted", true)
         val splashAuthMethod = intent.getStringExtra("appLockAuthMethod")
 
-        // Initialize the ViewModel with intent extras
+        // Initialize ViewModel
         viewModel.init(fromSplash, splashAuthMethod)
 
         lifecycleScope.launch {
@@ -78,22 +86,23 @@ class UnlockActivity : AppCompatActivity() {
                         onUnlockSuccess = {
                             UnlockManager.recordUnlock(packageName)
                             if (fromSplash) {
-                                if (allPermissionsGranted) {
-                                    val intent = Intent(this@UnlockActivity, MainActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    startActivity(intent)
-                                } else {
-                                    val intent = Intent(this@UnlockActivity, OnboardingActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    startActivity(intent)
+                                val targetClass = if (allPermissionsGranted)
+                                    MainActivity::class.java else OnboardingActivity::class.java
+
+                                val intent = Intent(this@UnlockActivity, targetClass).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 }
+                                startActivity(intent)
                             }
                             finish()
                         },
                         onCancel = {
-                            startActivity(
-                                Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
-                            )
+                            UnlockManager.recordCancel(packageName)
+                            val homeIntent = Intent(Intent.ACTION_MAIN).apply {
+                                addCategory(Intent.CATEGORY_HOME)
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            startActivity(homeIntent)
                             finish()
                         }
                     )
@@ -101,11 +110,27 @@ class UnlockActivity : AppCompatActivity() {
             }
         }
 
+        // Disable back button
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                // Back is disabled on unlock screen
+                // Back button is disabled on unlock screen for security
             }
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        UnlockManager.isLockShowing = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Keep lock showing during transitions
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Don't clear isLockShowing here - let the service manage it
     }
 }
 
@@ -121,40 +146,41 @@ fun UnlockScreen(
 ) {
     val isReady by viewModel.isReady.collectAsState()
     val activeUnlockMethod by viewModel.activeUnlockMethod.collectAsState()
+    val lockedAppUnlockMethod by viewModel.lockedAppUnlockMethod.collectAsState()
     val appLockType by viewModel.appLockType.collectAsState()
 
     var pinInput by remember { mutableStateOf("") }
     var authMessage by remember { mutableStateOf("Authenticate to unlock") }
-
-    // This state determines what UI to show. It starts with the method from the VM,
-    // but can be changed to "pin" as a fallback.
+    var showPasswordVisibility by remember { mutableStateOf(false) }
     var currentUiMode by remember(activeUnlockMethod) { mutableStateOf(activeUnlockMethod) }
-
-    val biometricAuthenticator = BiometricAuthenticator(
-        activity = activity,
-        onAuthenticationSuccess = onUnlockSuccess,
-        onAuthenticationError = {
-            authMessage = it
-            // CRITICAL CHANGE: If biometrics fail, switch to PIN UI as a fallback
-            if (activeUnlockMethod != "biometric") {
-                currentUiMode = "pin"
-            }
-        }
-    )
 
     val context = LocalContext.current
     val appIcon = try {
         context.packageManager.getApplicationIcon(packageName)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         null
     }
+
+    val biometricAuthenticator = BiometricAuthenticator(
+        activity = activity,
+        onAuthenticationSuccess = onUnlockSuccess,
+        onAuthenticationError = { errorMsg ->
+            authMessage = errorMsg
+            if (lockedAppUnlockMethod != "biometric" && activeUnlockMethod != "biometric") {
+                currentUiMode = "pin"
+            }
+        }
+    )
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         if (!isReady) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
                 CircularProgressIndicator()
             }
         } else {
@@ -170,112 +196,254 @@ fun UnlockScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // App icon
                     Box(
                         modifier = Modifier
-                            .size(80.dp)
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer),
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    )
+                                )
+                            )
+                            .shadow(elevation = 12.dp, shape = RoundedCornerShape(28.dp)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (appIcon != null) {
                             Image(
                                 painter = rememberDrawablePainter(drawable = appIcon),
                                 contentDescription = "App Icon",
-                                modifier = Modifier.fillMaxSize(0.7f)
+                                modifier = Modifier.fillMaxSize(0.65f)
                             )
                         } else {
-                            Text("🔒", fontSize = 40.sp)
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "App Lock",
+                                modifier = Modifier.size(50.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
                         }
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(appName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(
-                        if (fromSplash && currentUiMode != "pin") "Waiting for authentication" else authMessage,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.outline
-                    )
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // --- Authentication UI --- //
+                    Text(
+                        appName,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        if (fromSplash && currentUiMode != "pin") "Waiting for authentication" else authMessage,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
 
-                    if (currentUiMode == "biometric" || currentUiMode == "device_lock") {
-                        CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(40.dp))
 
-                        LaunchedEffect(currentUiMode) {
-                            biometricAuthenticator.authenticate(
-                                allowDeviceCredential = currentUiMode == "device_lock"
-                            )
-                        }
-
-                        if (!fromSplash) {
-                            Spacer(modifier = Modifier.height(32.dp))
-                            TextButton(onClick = { currentUiMode = "pin" }) {
-                                Text("Use PIN Instead")
+                    AnimatedContent(
+                        targetState = currentUiMode,
+                        transitionSpec = {
+                            fadeIn() togetherWith fadeOut()
+                        },
+                        label = "Auth mode transition"
+                    ) { mode ->
+                        when (mode) {
+                            "biometric", "device_lock" -> {
+                                BiometricAuthUI(
+                                    biometricAuthenticator = biometricAuthenticator,
+                                    currentUiMode = mode,
+                                    lockedAppUnlockMethod = lockedAppUnlockMethod,
+                                    fromSplash = fromSplash,
+                                    onSwitchToPin = { currentUiMode = "pin" }
+                                )
                             }
-                        }
-
-                    } else {
-                        // PIN / Password entry
-                        val isPassword = appLockType == "Password"
-                        val inputLabel = if (isPassword) "Enter Password" else "Enter PIN"
-                        val errorLabel = if (isPassword) "Incorrect Password" else "Incorrect PIN"
-
-                        if (activeUnlockMethod != "biometric") {
-                            OutlinedTextField(
-                                value = pinInput,
-                                onValueChange = { pinInput = it },
-                                label = { Text(inputLabel) },
-                                visualTransformation = PasswordVisualTransformation(),
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = if (isPassword) KeyboardType.Password
-                                    else KeyboardType.NumberPassword
-                                ),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 24.dp),
-                                singleLine = true,
-                                isError = authMessage != "Authenticate to unlock"
-                            )
-
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            Button(
-                                onClick = {
-                                    if (viewModel.verifyPassword(pinInput)) {
-                                        onUnlockSuccess()
-                                    } else {
-                                        authMessage = errorLabel
+                            else -> {
+                                PinAuthUI(
+                                    pinInput = pinInput,
+                                    onPinChange = { pinInput = it },
+                                    appLockType = appLockType,
+                                    viewModel = viewModel,
+                                    onUnlockSuccess = onUnlockSuccess,
+                                    onError = { errorMsg ->
+                                        authMessage = errorMsg
                                         pinInput = ""
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(0.8f),
-                                enabled = pinInput.isNotEmpty()
-                            ) {
-                                Text("Unlock")
-                            }
-                        }
-
-                        if (!fromSplash && (activeUnlockMethod == "biometric" || activeUnlockMethod == "device_lock")) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextButton(onClick = { currentUiMode = activeUnlockMethod }) {
-                                Text("Use Biometric Instead")
+                                    },
+                                    lockedAppUnlockMethod = lockedAppUnlockMethod,
+                                    fromSplash = fromSplash,
+                                    onSwitchToBiometric = { currentUiMode = activeUnlockMethod },
+                                    showPasswordVisibility = showPasswordVisibility,
+                                    onToggleVisibility = { showPasswordVisibility = !showPasswordVisibility }
+                                )
                             }
                         }
                     }
                 }
 
-                IconButton(
+                TextButton(
                     onClick = onCancel,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(12.dp)
+                        .padding(12.dp),
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Cancel")
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_exit),
+                        contentDescription = "Exit",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Exit",
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 14.sp
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BiometricAuthUI(
+    biometricAuthenticator: BiometricAuthenticator,
+    currentUiMode: String,
+    lockedAppUnlockMethod: String,
+    fromSplash: Boolean,
+    onSwitchToPin: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(48.dp),
+            strokeWidth = 4.dp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            "Scanning...",
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.outline
+        )
+
+        LaunchedEffect(currentUiMode) {
+            biometricAuthenticator.authenticate(
+                allowDeviceCredential = currentUiMode == "device_lock"
+            )
+        }
+
+        if (!fromSplash) {
+            Spacer(modifier = Modifier.height(40.dp))
+
+            if (lockedAppUnlockMethod == "biometric") {
+                Button(
+                    onClick = {
+                        biometricAuthenticator.authenticate(
+                            allowDeviceCredential = currentUiMode == "device_lock"
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("Try Again")
+                }
+            } else {
+                TextButton(
+                    onClick = onSwitchToPin,
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("Use PIN Instead")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PinAuthUI(
+    pinInput: String,
+    onPinChange: (String) -> Unit,
+    appLockType: String,
+    viewModel: UnlockViewModel,
+    onUnlockSuccess: () -> Unit,
+    onError: (String) -> Unit,
+    lockedAppUnlockMethod: String,
+    fromSplash: Boolean,
+    onSwitchToBiometric: () -> Unit,
+    showPasswordVisibility: Boolean,
+    onToggleVisibility: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val isPassword = appLockType == "Password"
+        val inputLabel = if (isPassword) "Enter Password" else "Enter PIN"
+
+        OutlinedTextField(
+            value = pinInput,
+            onValueChange = onPinChange,
+            label = { Text(inputLabel) },
+            visualTransformation = if (showPasswordVisibility) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = if (isPassword) KeyboardType.Password
+                else KeyboardType.NumberPassword
+            ),
+            trailingIcon = {
+                IconButton(onClick = onToggleVisibility) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (showPasswordVisibility) {
+                                R.drawable.ic_visibility  // Your drawable for eye icon
+                            } else {
+                                R.drawable.ic_visibility_off  // Your drawable for eye with slash icon
+                            }
+                        ),
+                        contentDescription = "Toggle password visibility"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 0.dp),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        Button(
+            onClick = {
+                if (viewModel.verifyPassword(pinInput)) {
+                    onUnlockSuccess()
+                } else {
+                    onError(if (isPassword) "Incorrect Password" else "Incorrect PIN")
+                }
+            },
+            modifier = Modifier.fillMaxWidth(0.8f),
+            enabled = pinInput.isNotEmpty(),
+            shape = RoundedCornerShape(8.dp)
+        ) {
+            Text("Unlock", modifier = Modifier.padding(vertical = 8.dp))
+        }
+
+        if (!fromSplash && lockedAppUnlockMethod == "both") {
+            Spacer(modifier = Modifier.height(12.dp))
+            TextButton(
+                onClick = onSwitchToBiometric,
+                modifier = Modifier.fillMaxWidth(0.8f)
+            ) {
+                Text("Use Biometric Instead")
             }
         }
     }

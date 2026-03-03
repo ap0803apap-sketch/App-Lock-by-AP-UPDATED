@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -63,6 +64,7 @@ fun SettingsScreen(
     val disableUsageStatsPage by viewModel.disableUsageStatsPage.collectAsState()
     val disableAccessibilityPage by viewModel.disableAccessibilityPage.collectAsState()
     val disableOverlayPage by viewModel.disableOverlayPage.collectAsState()
+    val relockPolicy by viewModel.relockPolicy.collectAsState()
 
     Scaffold(
         topBar = {
@@ -88,18 +90,9 @@ fun SettingsScreen(
             SettingsCard(title = "Appearance") {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text("Theme", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = theme == "system", onClick = { viewModel.setTheme("system") })
-                        Text("System", fontSize = 12.sp)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = theme == "light", onClick = { viewModel.setTheme("light") })
-                        Text("Light", fontSize = 12.sp)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = theme == "dark", onClick = { viewModel.setTheme("dark") })
-                        Text("Dark", fontSize = 12.sp)
-                    }
+                    SettingsOption(selected = theme == "system", onClick = { viewModel.setTheme("system") }, label = "System Default")
+                    SettingsOption(selected = theme == "light", onClick = { viewModel.setTheme("light") }, label = "Light")
+                    SettingsOption(selected = theme == "dark", onClick = { viewModel.setTheme("dark") }, label = "Dark")
 
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
@@ -108,12 +101,27 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Dynamic Colors", fontSize = 12.sp)
+                        Text("Dynamic Colors", fontSize = 14.sp)
                         Switch(
                             checked = useDynamicColors,
                             onCheckedChange = { viewModel.setUseDynamicColors(it) }
                         )
                     }
+                }
+            }
+
+            // ── Relock Settings ─────────────────────────────────────────────
+            SettingsCard(title = "Relock Timeout") {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("How long to wait before locking apps again after you leave them:", fontSize = 12.sp, color = MaterialTheme.colorScheme.outline)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    SettingsOption(selected = relockPolicy == "immediately", onClick = { viewModel.setRelockPolicy("immediately") }, label = "Immediately")
+                    SettingsOption(selected = relockPolicy == "5s", onClick = { viewModel.setRelockPolicy("5s") }, label = "5 seconds after exit")
+                    SettingsOption(selected = relockPolicy == "10s", onClick = { viewModel.setRelockPolicy("10s") }, label = "10 seconds after exit")
+                    SettingsOption(selected = relockPolicy == "30s", onClick = { viewModel.setRelockPolicy("30s") }, label = "30 seconds after exit")
+                    SettingsOption(selected = relockPolicy == "60s", onClick = { viewModel.setRelockPolicy("60s") }, label = "1 minute after exit")
+                    SettingsOption(selected = relockPolicy == "screen_off", onClick = { viewModel.setRelockPolicy("screen_off") }, label = "When screen turns off")
                 }
             }
 
@@ -129,90 +137,35 @@ fun SettingsScreen(
                             }
                             context.startActivity(intent)
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Change Passcode")
+                        Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Change Passcode / PIN")
                     }
 
                     HorizontalDivider()
 
                     // App Lock Security
                     Text("App Lock Security", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = appLockAuthMethod == "biometric", onClick = { viewModel.setAppLockAuthMethod("biometric") })
-                        Text("Biometric Only", fontSize = 12.sp)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = appLockAuthMethod == "device_lock", onClick = { viewModel.setAppLockAuthMethod("device_lock") })
-                        Text("Biometric + Device Lock", fontSize = 12.sp)
-                    }
+                    SettingsOption(selected = appLockAuthMethod == "biometric", onClick = { viewModel.setAppLockAuthMethod("biometric") }, label = "Biometric Only")
+                    SettingsOption(selected = appLockAuthMethod == "device_lock", onClick = { viewModel.setAppLockAuthMethod("device_lock") }, label = "Biometric + Device Lock")
 
                     HorizontalDivider()
 
                     // Locked App Security
                     Text("Locked App Security", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = lockedAppUnlockMethod == "both", onClick = { viewModel.setLockedAppUnlockMethod("both") })
-                        Text("Biometric or Passcode", fontSize = 12.sp)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = lockedAppUnlockMethod == "biometric", onClick = { viewModel.setLockedAppUnlockMethod("biometric") })
-                        Text("Biometric Only", fontSize = 12.sp)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = lockedAppUnlockMethod == "passcode", onClick = { viewModel.setLockedAppUnlockMethod("passcode") })
-                        Text("Passcode Only", fontSize = 12.sp)
-                    }
+                    SettingsOption(selected = lockedAppUnlockMethod == "both", onClick = { viewModel.setLockedAppUnlockMethod("both") }, label = "Biometric or Passcode")
+                    SettingsOption(selected = lockedAppUnlockMethod == "biometric", onClick = { viewModel.setLockedAppUnlockMethod("biometric") }, label = "Biometric Only")
+                    SettingsOption(selected = lockedAppUnlockMethod == "passcode", onClick = { viewModel.setLockedAppUnlockMethod("passcode") }, label = "Passcode Only")
 
                     HorizontalDivider()
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Disable Admin Settings", fontSize = 12.sp)
-                        Switch(
-                            checked = disableAdminSettings,
-                            onCheckedChange = { viewModel.setDisableAdminSettings(it) }
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Disable Usage Stats Page", fontSize = 12.sp)
-                        Switch(
-                            checked = disableUsageStatsPage,
-                            onCheckedChange = { viewModel.setDisableUsageStatsPage(it) }
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Disable Accessibility Page", fontSize = 12.sp)
-                        Switch(
-                            checked = disableAccessibilityPage,
-                            onCheckedChange = { viewModel.setDisableAccessibilityPage(it) }
-                        )
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Disable Overlay Page", fontSize = 12.sp)
-                        Switch(
-                            checked = disableOverlayPage,
-                            onCheckedChange = { viewModel.setDisableOverlayPage(it) }
-                        )
-                    }
+                    SecuritySwitch(label = "Protect Admin Settings", checked = disableAdminSettings, onCheckedChange = { viewModel.setDisableAdminSettings(it) })
+                    SecuritySwitch(label = "Protect Usage Stats", checked = disableUsageStatsPage, onCheckedChange = { viewModel.setDisableUsageStatsPage(it) })
+                    SecuritySwitch(label = "Protect Accessibility", checked = disableAccessibilityPage, onCheckedChange = { viewModel.setDisableAccessibilityPage(it) })
+                    SecuritySwitch(label = "Protect Overlay Settings", checked = disableOverlayPage, onCheckedChange = { viewModel.setDisableOverlayPage(it) })
                 }
             }
 
@@ -305,6 +258,34 @@ fun SettingsScreen(
 }
 
 @Composable
+fun SettingsOption(selected: Boolean, onClick: () -> Unit, label: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically, 
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp)
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Text(label, fontSize = 14.sp)
+    }
+}
+
+@Composable
+fun SecuritySwitch(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, fontSize = 14.sp)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
 fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(
         modifier = Modifier
@@ -317,6 +298,7 @@ fun SettingsCard(title: String, content: @Composable ColumnScope.() -> Unit) {
                 title,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
             content()

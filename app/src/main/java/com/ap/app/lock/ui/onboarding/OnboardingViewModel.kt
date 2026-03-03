@@ -58,7 +58,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
             is OnboardingScreenState.Permissions -> OnboardingScreenState.AppLockAuthSetup
             is OnboardingScreenState.AppLockAuthSetup -> OnboardingScreenState.AppLockType
             is OnboardingScreenState.AppLockType -> OnboardingScreenState.SetupComplete
-            is OnboardingScreenState.SetupComplete -> OnboardingScreenState.SetupComplete // Should be handled by completeOnboarding
+            is OnboardingScreenState.SetupComplete -> OnboardingScreenState.SetupComplete
         }
     }
 
@@ -82,24 +82,23 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
                     val encryptedValue = Encryption.encrypt(appLockTypeValue) ?: appLockTypeValue
 
                     if (isChanging) {
-                        // CHANGE PASSCODE MODE:
-                        // Only update the locked-apps passcode (appLockType + appLockTypeValue).
-                        // Never touch appLockAuthMethod — that would break splash authentication.
                         repository.updateLockedAppsPasscode(
                             lockType = _appLockType.value,
                             lockTypeValue = encryptedValue
                         )
                     } else {
                         // INITIAL SETUP:
-                        // Save everything including app lock auth method.
-                        val currentSettings = repository.getSettings() ?: SettingsEntity()
+                        // Ensure a settings record exists with id=1
+                        val currentSettings = repository.getSettings() ?: SettingsEntity(id = 1)
                         val updatedSettings = currentSettings.copy(
+                            id = 1,
                             appLockAuthMethod = _appLockAuthMethod.value,
                             appLockType = _appLockType.value,
                             appLockTypeValue = encryptedValue,
-                            lockedAppUnlockMethod = "both" // Set default for locked apps
+                            lockedAppUnlockMethod = "both"
                         )
-                        repository.updateSettings(updatedSettings)
+                        // Use insert (REPLACE) or update to ensure it's saved
+                        repository.saveSettings(updatedSettings)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -116,10 +115,15 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
 
     fun completeOnboarding() {
         viewModelScope.launch {
-            val currentSettings = repository.getSettings()
-            if (currentSettings != null) {
-                val updatedSettings = currentSettings.copy(onboardingCompleted = true)
-                repository.updateSettings(updatedSettings)
+            withContext(Dispatchers.IO) {
+                val currentSettings = repository.getSettings()
+                if (currentSettings != null) {
+                    val updatedSettings = currentSettings.copy(onboardingCompleted = true)
+                    repository.updateSettings(updatedSettings)
+                } else {
+                    // This case shouldn't happen if saveLockSettings was called
+                    repository.saveSettings(SettingsEntity(id = 1, onboardingCompleted = true))
+                }
             }
             _onboardingComplete.value = true
         }

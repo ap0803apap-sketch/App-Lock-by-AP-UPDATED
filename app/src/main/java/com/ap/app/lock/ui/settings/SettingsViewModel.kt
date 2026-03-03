@@ -39,6 +39,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _disableOverlayPage = MutableStateFlow(false)
     val disableOverlayPage: StateFlow<Boolean> = _disableOverlayPage
 
+    private val _relockPolicy = MutableStateFlow("immediately")
+    val relockPolicy: StateFlow<String> = _relockPolicy
+
     init {
         loadSettings()
     }
@@ -59,6 +62,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 _disableUsageStatsPage.value = it.disableUsageStatsPage
                 _disableAccessibilityPage.value = it.disableAccessibilityPage
                 _disableOverlayPage.value = it.disableOverlayPage
+                _relockPolicy.value = it.relockPolicy
             }
         }
     }
@@ -116,6 +120,13 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _disableOverlayPage.value = disable
             settingsRepository.updateDisableOverlayPage(disable)
+        }
+    }
+
+    fun setRelockPolicy(policy: String) {
+        viewModelScope.launch {
+            _relockPolicy.value = policy
+            settingsRepository.updateRelockPolicy(policy)
         }
     }
 }

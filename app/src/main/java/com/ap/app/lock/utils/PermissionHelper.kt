@@ -5,11 +5,12 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Parcelable
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.app.NotificationManagerCompat
-import com.ap.app.lock.receivers.AppLockDeviceAdminReceiver
+import com.ap.app.lock.receivers.DeviceAdminReceiver
 import com.ap.app.lock.services.AppLockAccessibilityService
 
 object PermissionHelper {
@@ -37,14 +38,14 @@ object PermissionHelper {
 
     fun isDeviceAdminEnabled(context: Context): Boolean {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val componentName = ComponentName(context, AppLockDeviceAdminReceiver::class.java)
+        val componentName = ComponentName(context, DeviceAdminReceiver::class.java)
         return dpm.isAdminActive(componentName)
     }
 
     fun isBatteryOptimizationIgnored(context: Context): Boolean {
         val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
 
-        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             true // Android 11+ "Unrestricted" cannot be detected reliably
         } else {
             pm.isIgnoringBatteryOptimizations(context.packageName)
@@ -86,7 +87,7 @@ object PermissionHelper {
     }
 
     fun requestDeviceAdminPermission(context: Context) {
-        val componentName = ComponentName(context, AppLockDeviceAdminReceiver::class.java)
+        val componentName = ComponentName(context, DeviceAdminReceiver::class.java)
         val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName as Parcelable)
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Device admin permission is required to protect the app from being uninstalled.")

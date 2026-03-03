@@ -41,4 +41,5 @@ class SettingsRepository(private val settingsDao: SettingsDao) {
 
     suspend fun updateLockedAppUnlockMethod(method: String) = settingsDao.updateLockedAppUnlockMethod(method)
 
+    suspend fun updateRelockPolicy(policy: String) = settingsDao.updateRelockPolicy(policy)
 }

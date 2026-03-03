@@ -17,6 +17,9 @@ class UnlockViewModel(application: Application) : AndroidViewModel(application) 
     private val _activeUnlockMethod = MutableStateFlow("pin")
     val activeUnlockMethod: StateFlow<String> = _activeUnlockMethod
 
+    private val _lockedAppUnlockMethod = MutableStateFlow("both")
+    val lockedAppUnlockMethod: StateFlow<String> = _lockedAppUnlockMethod
+
     private val _appLockType = MutableStateFlow("4-Digit PIN")
     val appLockType: StateFlow<String> = _appLockType
 
@@ -39,6 +42,7 @@ class UnlockViewModel(application: Application) : AndroidViewModel(application) 
 
             decryptedPasscode = Encryption.decrypt(settings.appLockTypeValue.orEmpty()) ?: ""
             _appLockType.value = settings.appLockType ?: "4-Digit PIN"
+            _lockedAppUnlockMethod.value = settings.lockedAppUnlockMethod
 
             if (fromSplash) {
                 // For splash screen, the method is fixed from onboarding

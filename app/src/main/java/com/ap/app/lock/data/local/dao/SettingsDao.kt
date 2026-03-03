@@ -61,4 +61,7 @@ interface SettingsDao {
 
     @Query("UPDATE settings SET lockedAppUnlockMethod = :method WHERE id = 1")
     suspend fun updateLockedAppUnlockMethod(method: String)
+
+    @Query("UPDATE settings SET relockPolicy = :policy WHERE id = 1")
+    suspend fun updateRelockPolicy(policy: String)
 }

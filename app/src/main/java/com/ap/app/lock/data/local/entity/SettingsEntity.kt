@@ -19,5 +19,6 @@ data class SettingsEntity(
     val disableOverlayPage: Boolean = false,
     val disableUsageStatsPage: Boolean = false,
     val disableAccessibilityPage: Boolean = false,
-    val lockedAppUnlockMethod: String = "both" // "both", "biometric", "passcode"
+    val lockedAppUnlockMethod: String = "both", // "both", "biometric", "passcode"
+    val relockPolicy: String = "immediately" // "immediately", "5s", "10s", "30s", "60s", "screen_off"
 )

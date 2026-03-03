@@ -34,6 +34,8 @@ class AppMonitoringService : Service() {
             .setContentTitle("App Lock")
             .setContentText("Protecting your apps")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setSilent(true)
             .build()
     }
 
@@ -42,7 +44,7 @@ class AppMonitoringService : Service() {
             val channel = NotificationChannel(
                 "app_monitoring_channel",
                 "App Monitoring",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
             )
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(channel)
